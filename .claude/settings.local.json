@@ -19,7 +19,8 @@
       "Bash(wsl gh repo view rogerwintercircleci/adaptive-testing-ecommerce --json url,description,isPrivate)",
       "Bash(git commit:*)",
       "Bash(npm run lint:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(wsl --cd /mnt/c/Adaptive_Testing git push)"
     ],
     "deny": [],
     "ask": []

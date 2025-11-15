@@ -83,7 +83,7 @@ describe('UserService', () => {
 
       const result = await userService.register(validRegistrationData);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({ user: mockUser });
       expect(passwordUtils.validatePasswordStrength).toHaveBeenCalledWith(
         validRegistrationData.password
       );
@@ -180,6 +180,7 @@ describe('UserService', () => {
         user: mockUser,
         accessToken,
         refreshToken,
+        token: accessToken, // Alias for backward compatibility
       });
       expect(mockUserRepository.resetLoginAttempts).toHaveBeenCalledWith(mockUser.id);
       expect(mockUserRepository.updateLastLogin).toHaveBeenCalledWith(mockUser.id);

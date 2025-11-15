@@ -172,7 +172,12 @@ describe('Validation Utilities', () => {
     });
 
     it('should validate query params', () => {
-      const middleware = validate(testSchema, 'query');
+      // Query params come as strings from URL, so use coerce for numbers
+      const querySchema = z.object({
+        name: z.string().min(1),
+        age: z.coerce.number().positive(),
+      });
+      const middleware = validate(querySchema, 'query');
       const req = { query: { name: 'John', age: '25' } } as unknown as Request;
       const res = {} as Response;
       const next = jest.fn() as NextFunction;
@@ -183,7 +188,12 @@ describe('Validation Utilities', () => {
     });
 
     it('should validate route params', () => {
-      const middleware = validate(testSchema, 'params');
+      // Route params come as strings from URL, so use coerce for numbers
+      const paramsSchema = z.object({
+        name: z.string().min(1),
+        age: z.coerce.number().positive(),
+      });
+      const middleware = validate(paramsSchema, 'params');
       const req = { params: { name: 'John', age: '25' } } as unknown as Request;
       const res = {} as Response;
       const next = jest.fn() as NextFunction;
@@ -208,11 +218,11 @@ describe('Validation Utilities', () => {
       const middleware = validate(testSchema, 'body');
       const req = { body: { name: '', age: -1 } } as Request;
       const res = {} as Response;
-      const next = jest.fn() as NextFunction;
+      const next = jest.fn();
 
-      middleware(req, res, next);
+      middleware(req, res, next as NextFunction);
 
-      const error = next.mock.calls[0][0] as ValidationError;
+      const error = (next as jest.Mock).mock.calls[0][0] as ValidationError;
       expect(error.errors).toBeDefined();
       expect(Object.keys(error.errors).length).toBeGreaterThan(0);
     });

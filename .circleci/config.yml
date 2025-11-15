@@ -104,15 +104,12 @@ jobs:
           command: |
             # Use CircleCI test splitting
             TESTFILES=$(circleci tests glob "src/**/*.spec.ts" | circleci tests split --split-by=timings)
-            npm test -- --ci --coverage --maxWorkers=2 --testPathPattern="$(echo $TESTFILES | tr ' ' '|')"
+            npm test -- --ci --maxWorkers=2 --testPathPattern="$(echo $TESTFILES | tr ' ' '|')"
           environment:
             JEST_JUNIT_OUTPUT_DIR: test-results/jest
             JEST_JUNIT_OUTPUT_NAME: results.xml
       - store_test_results:
           path: test-results
-      - store_artifacts:
-          path: coverage
-          destination: coverage-adaptive
 
   # Job 5: Run integration tests
   test_integration:

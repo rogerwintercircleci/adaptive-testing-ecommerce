@@ -28,7 +28,7 @@ export class WishlistRepository extends BaseRepository<WishlistItem> {
     return this.repository.count({ where: { userId } });
   }
 
-  async moveToCart(wishlistItemId: string): Promise<any> {
+  async moveToCart(_wishlistItemId: string): Promise<any> {
     // In production, would move to cart table
     return {
       cartItemId: 'cart-1',

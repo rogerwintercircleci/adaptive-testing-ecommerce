@@ -448,7 +448,7 @@ export class NotificationService {
   async sendOrderShippedEmail(
     email: string,
     orderNumber: string,
-    carrier: string,
+    _carrier: string,
     trackingNumber: string
   ): Promise<NotificationResult> {
     return this.sendShippingNotification(email, orderNumber, trackingNumber);

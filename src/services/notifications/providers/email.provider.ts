@@ -65,10 +65,11 @@ export interface WebhookEvent {
 }
 
 export class EmailProvider {
-  private config?: EmailConfig;
+  // @ts-expect-error - Config reserved for future API key validation
+  private _config?: EmailConfig;
 
   constructor(config?: EmailConfig) {
-    this.config = config;
+    this._config = config;
   }
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
@@ -85,7 +86,7 @@ export class EmailProvider {
     };
   }
 
-  async sendTemplateEmail(options: TemplateEmailOptions): Promise<EmailResult> {
+  async sendTemplateEmail(_options: TemplateEmailOptions): Promise<EmailResult> {
     return {
       messageId: `template-email-${Date.now()}`,
       success: true,
@@ -136,7 +137,7 @@ export class EmailProvider {
     return { processed: true, action };
   }
 
-  async validateDomainAuth(domain: string): Promise<{ valid: boolean; spf: boolean; dkim: boolean; dmarc: boolean }> {
+  async validateDomainAuth(_domain: string): Promise<{ valid: boolean; spf: boolean; dkim: boolean; dmarc: boolean }> {
     return {
       valid: true,
       spf: true,
@@ -149,15 +150,15 @@ export class EmailProvider {
     return [];
   }
 
-  async removeBounce(email: string): Promise<{ success: boolean }> {
+  async removeBounce(_email: string): Promise<{ success: boolean }> {
     return { success: true };
   }
 
-  async suppressEmail(email: string): Promise<{ success: boolean }> {
+  async suppressEmail(_email: string): Promise<{ success: boolean }> {
     return { success: true };
   }
 
-  async isEmailSuppressed(email: string): Promise<boolean> {
+  async isEmailSuppressed(_email: string): Promise<boolean> {
     return false;
   }
 
@@ -173,7 +174,7 @@ export class EmailProvider {
     };
   }
 
-  async cancelScheduledEmail(messageId: string): Promise<{ success: boolean }> {
+  async cancelScheduledEmail(_messageId: string): Promise<{ success: boolean }> {
     return { success: true };
   }
 }

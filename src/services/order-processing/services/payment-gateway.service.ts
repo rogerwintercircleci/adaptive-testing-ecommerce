@@ -335,7 +335,7 @@ export class PaymentGatewayService {
   /**
    * Complete 3D Secure payment
    */
-  async complete3DSPayment(data: Complete3DSData): Promise<PaymentResult> {
+  async complete3DSPayment(_data: Complete3DSData): Promise<PaymentResult> {
     await this.sleep(100);
 
     return {
@@ -364,7 +364,7 @@ export class PaymentGatewayService {
   /**
    * Submit dispute evidence
    */
-  async submitDisputeEvidence(disputeId: string, evidence: DisputeEvidence): Promise<any> {
+  async submitDisputeEvidence(_disputeId: string, _evidence: DisputeEvidence): Promise<any> {
     await this.sleep(50);
 
     return {

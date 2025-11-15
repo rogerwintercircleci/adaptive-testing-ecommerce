@@ -40,7 +40,7 @@ export class ReviewRepository extends BaseRepository<Review> {
     });
   }
 
-  async markAsHelpful(reviewId: string, userId: string): Promise<void> {
+  async markAsHelpful(reviewId: string, _userId: string): Promise<void> {
     await this.repository.increment({ id: reviewId }, 'helpfulCount', 1);
   }
 }

@@ -7,7 +7,7 @@
 import { Repository } from 'typeorm';
 import { Product, ProductStatus } from '../entities/product.entity';
 import { BaseRepository } from '@libs/database';
-import { NotFoundError, ConflictError, BadRequestError } from '@libs/errors';
+import { ConflictError, BadRequestError } from '@libs/errors';
 
 export interface SearchProductsOptions {
   page?: number;

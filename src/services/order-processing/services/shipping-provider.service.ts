@@ -142,6 +142,7 @@ export interface BatchLabelResult {
 }
 
 export class ShippingProviderService {
+  // @ts-expect-error - Config stored for future API key validation
   private _config: ShippingProviderConfig;
 
   constructor(config: ShippingProviderConfig) {

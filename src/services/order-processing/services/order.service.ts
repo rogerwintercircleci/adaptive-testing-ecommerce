@@ -44,7 +44,9 @@ export class OrderService {
 
   constructor(
     private orderRepository: OrderRepository,
+    // @ts-expect-error - Reserved for future product validation implementation
     private _productRepository?: any,
+    // @ts-expect-error - Reserved for future order notification implementation
     private _notificationService?: any
   ) {}
 

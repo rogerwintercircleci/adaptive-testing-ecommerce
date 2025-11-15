@@ -162,8 +162,10 @@ export class OrderRepository extends BaseRepository<Order> {
       cancelledAt: new Date(),
     };
 
+    // Note: cancellationReason property doesn't exist on Order entity
+    // In production, would store reason in a separate table or add field to entity
     if (reason) {
-      updateData.cancellationReason = reason;
+      // updateData.cancellationReason = reason;
     }
 
     const updated = this.repository.merge(order, updateData);

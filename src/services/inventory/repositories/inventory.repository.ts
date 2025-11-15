@@ -37,7 +37,7 @@ export class InventoryRepository extends BaseRepository<Inventory> {
   }
 
   async update(productId: string, updates: Partial<Inventory>): Promise<Inventory> {
-    const inventory = await this.findByProductId(productId);
+    await this.findByProductId(productId);
 
     await this.repository.update(
       { productId },
@@ -100,15 +100,15 @@ export class InventoryRepository extends BaseRepository<Inventory> {
       .getMany();
   }
 
-  async recordAdjustment(adjustment: InventoryAdjustment): Promise<void> {
+  async recordAdjustment(_adjustment: InventoryAdjustment): Promise<void> {
     // In production, this would save to an inventory_history table
     // For now, this is a mock implementation
     // The actual history would be stored and retrieved from a database
   }
 
   async getInventoryHistory(
-    productId: string,
-    options?: any
+    _productId: string,
+    _options?: any
   ): Promise<Array<{ quantity: number; date: Date; reason?: string }>> {
     // Mock implementation - in production would query inventory_history table
     // Return sample data for testing

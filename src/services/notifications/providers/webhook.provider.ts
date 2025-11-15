@@ -12,7 +12,7 @@ export interface WebhookResult {
 }
 
 export class WebhookProvider {
-  async sendWebhook(options: WebhookOptions): Promise<WebhookResult> {
+  async sendWebhook(_options: WebhookOptions): Promise<WebhookResult> {
     // Mock implementation - in production would use axios or fetch
     return { statusCode: 200 };
   }

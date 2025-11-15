@@ -4,6 +4,7 @@ import {
   FindManyOptions,
   DeepPartial,
   ObjectId,
+  ObjectLiteral,
 } from 'typeorm';
 import { NotFoundError } from '../errors';
 
@@ -11,7 +12,7 @@ import { NotFoundError } from '../errors';
  * Base Repository with common CRUD operations
  * Extend this class for entity-specific repositories
  */
-export abstract class BaseRepository<T> {
+export abstract class BaseRepository<T extends ObjectLiteral> {
   constructor(protected repository: Repository<T>) {}
 
   /**
@@ -27,7 +28,7 @@ export abstract class BaseRepository<T> {
    */
   async findById(id: string | number | ObjectId): Promise<T> {
     const entity = await this.repository.findOne({
-      where: { id } as FindOptionsWhere<T>,
+      where: { id } as unknown as FindOptionsWhere<T>,
     });
 
     if (!entity) {
@@ -42,7 +43,7 @@ export abstract class BaseRepository<T> {
    */
   async findByIdOrNull(id: string | number | ObjectId): Promise<T | null> {
     return this.repository.findOne({
-      where: { id } as FindOptionsWhere<T>,
+      where: { id } as unknown as FindOptionsWhere<T>,
     });
   }
 

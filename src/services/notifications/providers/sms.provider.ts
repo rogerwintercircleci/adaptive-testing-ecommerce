@@ -12,7 +12,7 @@ export interface SMSResult {
 }
 
 export class SMSProvider {
-  async sendSMS(options: SMSOptions): Promise<SMSResult> {
+  async sendSMS(_options: SMSOptions): Promise<SMSResult> {
     // Mock implementation - in production would use Twilio or similar
     return { messageId: `sms-${Date.now()}` };
   }

@@ -1,13 +1,8 @@
-# CircleCI Configuration for E-Commerce Platform
-# Demonstrating Adaptive Testing Capabilities
-
 version: 2.1
 
-# Orbs are reusable packages of CircleCI configuration
 orbs:
   node: circleci/node@5.1.0
 
-# Define reusable executors
 executors:
   node-executor:
     docker:
@@ -21,10 +16,8 @@ executors:
     working_directory: ~/project
     resource_class: medium
 
-# Define reusable commands
 commands:
   install_dependencies:
-    description: "Install Node dependencies with caching"
     steps:
       - restore_cache:
           keys:
@@ -39,16 +32,12 @@ commands:
           key: v1-dependencies-{{ checksum "package.json" }}
 
   wait_for_db:
-    description: "Wait for PostgreSQL to be ready"
     steps:
       - run:
           name: Wait for PostgreSQL
-          command: |
-            dockerize -wait tcp://localhost:5432 -timeout 1m
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
 
-# Define jobs
 jobs:
-  # Job 1: Checkout and install dependencies
   checkout_and_install:
     executor: node-executor
     steps:
@@ -59,7 +48,6 @@ jobs:
           paths:
             - .
 
-  # Job 2: Lint and type check
   lint_and_typecheck:
     executor: node-executor
     steps:
@@ -72,111 +60,6 @@ jobs:
           name: Run TypeScript type check
           command: npm run typecheck
 
-  # Job 3: Run unit tests WITHOUT adaptive testing (baseline)
-  test_unit_baseline:
-    executor: node-executor
-    parallelism: 1
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: Run Unit Tests (Baseline)
-          command: |
-            npm run test:unit -- --coverage --maxWorkers=2
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: test-results/jest
-            JEST_JUNIT_OUTPUT_NAME: results.xml
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: coverage
-          destination: coverage-baseline
-
-  # Job 4: Run unit tests WITH adaptive testing
-  test_unit_adaptive:
-    executor: node-executor
-    parallelism: 4  # Split across 4 nodes
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: Run Unit Tests (Adaptive - Split by Timing)
-          command: |
-            # Use CircleCI test splitting
-            TESTFILES=$(circleci tests glob "src/**/*.spec.ts" | circleci tests split --split-by=timings)
-            npm test -- --ci --maxWorkers=2 --testPathPattern="$(echo $TESTFILES | tr ' ' '|')"
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: test-results/jest
-            JEST_JUNIT_OUTPUT_NAME: results.xml
-      - store_test_results:
-          path: test-results
-
-  # Job 5: Run integration tests
-  test_integration:
-    executor: node-executor
-    parallelism: 2
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - wait_for_db
-      - run:
-          name: Run Database Migrations
-          command: npm run db:migrate
-      - run:
-          name: Run Integration Tests
-          command: |
-            TESTFILES=$(circleci tests glob "tests/integration/**/*.test.ts" | circleci tests split --split-by=timings)
-            npm test -- --ci --testPathPattern="$(echo $TESTFILES | tr ' ' '|')"
-          environment:
-            DB_HOST: localhost
-            DB_PORT: 5432
-            DB_NAME: ecommerce_test_db
-            DB_USER: postgres
-            DB_PASSWORD: postgres
-            REDIS_HOST: localhost
-            REDIS_PORT: 6379
-      - store_test_results:
-          path: test-results
-
-  # Job 6: Run E2E tests
-  test_e2e:
-    executor: node-executor
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - wait_for_db
-      - run:
-          name: Run Database Migrations
-          command: npm run db:migrate
-      - run:
-          name: Seed Test Data
-          command: npm run db:seed
-      - run:
-          name: Run E2E Tests
-          command: npm run test:e2e -- --ci
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: test-results/screenshots
-          destination: e2e-screenshots
-
-  # Job 7: Run performance tests
-  test_performance:
-    executor: node-executor
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - wait_for_db
-      - run:
-          name: Run Performance Tests
-          command: npm run test:performance -- --ci
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: test-results/performance
-          destination: performance-reports
-
-  # Job 8: Build application
   build:
     executor: node-executor
     steps:
@@ -190,28 +73,6 @@ jobs:
           paths:
             - dist
 
-  # Job 9: Generate coverage report
-  coverage_report:
-    executor: node-executor
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: Generate Combined Coverage Report
-          command: npm run test:coverage -- --ci
-      - run:
-          name: Upload Coverage to Codecov
-          command: |
-            # Install codecov
-            npm install -g codecov
-            # Upload coverage
-            codecov
-      - store_artifacts:
-          path: coverage
-          destination: coverage-final
-
-  # Job 10: ADAPTIVE TESTING - Unit Tests (Analysis Mode)
-  # Runs ALL tests with coverage to build impact data
   test_unit_adaptive_analysis:
     executor: node-executor
     parallelism: 4
@@ -219,18 +80,14 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Run Unit Tests (Adaptive - Analysis Mode)
-          command: |
-            echo "📊 Running ANALYSIS mode - building test impact data"
-            circleci run testsuite "unit-tests" --test-selection=all --test-analysis=all
+          name: Run Unit Tests (Analysis Mode)
+          command: circleci run testsuite "unit-tests" --test-selection=all --test-analysis=all
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: coverage
           destination: coverage-adaptive-analysis
 
-  # Job 11: ADAPTIVE TESTING - Unit Tests (Selection Mode)
-  # Runs ONLY impacted tests using existing impact data
   test_unit_adaptive_selection:
     executor: node-executor
     parallelism: 4
@@ -238,17 +95,14 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Run Unit Tests (Adaptive - Selection Mode)
-          command: |
-            echo "⚡ Running SELECTION mode - only impacted tests"
-            circleci run testsuite "unit-tests" --test-selection=impacted --test-analysis=none
+          name: Run Unit Tests (Selection Mode)
+          command: circleci run testsuite "unit-tests" --test-selection=impacted --test-analysis=none
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: coverage
           destination: coverage-adaptive-selection
 
-  # Job 12: ADAPTIVE TESTING - Integration Tests (Analysis Mode)
   test_integration_adaptive_analysis:
     executor: node-executor
     parallelism: 2
@@ -260,17 +114,14 @@ jobs:
           name: Run Database Migrations
           command: npm run db:migrate
       - run:
-          name: Run Integration Tests (Adaptive - Analysis Mode)
-          command: |
-            echo "📊 Running ANALYSIS mode - building test impact data"
-            circleci run testsuite "integration-tests" --test-selection=all --test-analysis=all
+          name: Run Integration Tests (Analysis Mode)
+          command: circleci run testsuite "integration-tests" --test-selection=all --test-analysis=all
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: coverage
           destination: coverage-adaptive-analysis
 
-  # Job 13: ADAPTIVE TESTING - Integration Tests (Selection Mode)
   test_integration_adaptive_selection:
     executor: node-executor
     parallelism: 2
@@ -282,17 +133,14 @@ jobs:
           name: Run Database Migrations
           command: npm run db:migrate
       - run:
-          name: Run Integration Tests (Adaptive - Selection Mode)
-          command: |
-            echo "⚡ Running SELECTION mode - only impacted tests"
-            circleci run testsuite "integration-tests" --test-selection=impacted --test-analysis=none
+          name: Run Integration Tests (Selection Mode)
+          command: circleci run testsuite "integration-tests" --test-selection=impacted --test-analysis=none
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: coverage
           destination: coverage-adaptive-selection
 
-  # Job 14: ADAPTIVE TESTING - E2E Tests (Analysis Mode)
   test_e2e_adaptive_analysis:
     executor: node-executor
     steps:
@@ -306,17 +154,14 @@ jobs:
           name: Seed Test Data
           command: npm run db:seed
       - run:
-          name: Run E2E Tests (Adaptive - Analysis Mode)
-          command: |
-            echo "📊 Running ANALYSIS mode - building test impact data"
-            circleci run testsuite "e2e-tests" --test-selection=all --test-analysis=all
+          name: Run E2E Tests (Analysis Mode)
+          command: circleci run testsuite "e2e-tests" --test-selection=all --test-analysis=all
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: coverage
           destination: coverage-adaptive-analysis
 
-  # Job 15: ADAPTIVE TESTING - E2E Tests (Selection Mode)
   test_e2e_adaptive_selection:
     executor: node-executor
     steps:
@@ -330,111 +175,17 @@ jobs:
           name: Seed Test Data
           command: npm run db:seed
       - run:
-          name: Run E2E Tests (Adaptive - Selection Mode)
-          command: |
-            echo "⚡ Running SELECTION mode - only impacted tests"
-            circleci run testsuite "e2e-tests" --test-selection=impacted --test-analysis=none
+          name: Run E2E Tests (Selection Mode)
+          command: circleci run testsuite "e2e-tests" --test-selection=impacted --test-analysis=none
       - store_test_results:
           path: test-results
       - store_artifacts:
           path: coverage
           destination: coverage-adaptive-selection
 
-# Define workflows
 workflows:
   version: 2
 
-  # Main workflow WITHOUT adaptive testing (baseline for comparison)
-  test_baseline:
-    jobs:
-      - checkout_and_install:
-          filters:
-            branches:
-              only: main
-      - lint_and_typecheck:
-          requires:
-            - checkout_and_install
-      - test_unit_baseline:
-          requires:
-            - lint_and_typecheck
-      - test_integration:
-          requires:
-            - test_unit_baseline
-      - test_e2e:
-          requires:
-            - test_integration
-      - test_performance:
-          requires:
-            - test_integration
-      - build:
-          requires:
-            - test_e2e
-            - test_performance
-      - coverage_report:
-          requires:
-            - build
-
-  # Workflow WITH adaptive testing (optimized)
-  # NOTE: Disabled in favor of test_adaptive_intelligent workflow
-  # This workflow uses test splitting by timing (not true adaptive testing)
-  test_adaptive:
-    jobs:
-      - checkout_and_install:
-          filters:
-            branches:
-              ignore:
-                - main
-                - master
-                - adaptive-testing-demo
-      - lint_and_typecheck:
-          requires:
-            - checkout_and_install
-      - test_unit_adaptive:
-          requires:
-            - lint_and_typecheck
-      - test_integration:
-          requires:
-            - test_unit_adaptive
-      - test_e2e:
-          requires:
-            - test_integration
-      - build:
-          requires:
-            - test_e2e
-
-  # Nightly comprehensive test run
-  nightly_full_suite:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"  # Run at midnight UTC
-          filters:
-            branches:
-              only: main
-    jobs:
-      - checkout_and_install
-      - lint_and_typecheck:
-          requires:
-            - checkout_and_install
-      - test_unit_adaptive:
-          requires:
-            - lint_and_typecheck
-      - test_integration:
-          requires:
-            - test_unit_adaptive
-      - test_e2e:
-          requires:
-            - test_integration
-      - test_performance:
-          requires:
-            - test_integration
-      - coverage_report:
-          requires:
-            - test_e2e
-            - test_performance
-
-  # ADAPTIVE TESTING - Analysis Phase (Master Branch)
-  # Builds test impact data by running all tests with coverage analysis
-  # This is slower but only runs once to build the impact mapping
   test_adaptive_analysis:
     jobs:
       - checkout_and_install:
@@ -457,9 +208,6 @@ workflows:
           requires:
             - test_e2e_adaptive_analysis
 
-  # ADAPTIVE TESTING - Selection Phase (Feature Branches)
-  # Uses test impact data to run ONLY impacted tests
-  # This is much faster - only runs tests affected by your changes
   test_adaptive_intelligent:
     jobs:
       - checkout_and_install:

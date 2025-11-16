@@ -1,9 +1,3 @@
-# CircleCI Adaptive Testing Configuration
-# This file enables intelligent test selection based on code changes
-# Documentation: https://circleci.com/docs/guides/test/adaptive-testing/
-# Multiple test suites are separated by '---'
-
-# Unit Tests - Service layer tests
 name: unit-tests
 discover: find src -name "*.spec.ts" -type f | sed 's|^|/home/circleci/project/|'
 run: JEST_JUNIT_OUTPUT_FILE="<< outputs.junit >>" npm test -- << test.atoms >> --ci --maxWorkers=2 --passWithNoTests --reporters=default --reporters=jest-junit
@@ -14,8 +8,10 @@ outputs:
 options:
   adaptive-testing: true
   dynamic-batching: true
+  full-test-run-paths:
+    - package-lock.json
+    - jest.config.js
 ---
-# Integration Tests - Cross-service integration tests
 name: integration-tests
 discover: find tests/integration -name "*.test.ts" -type f | sed 's|^|/home/circleci/project/|'
 run: JEST_JUNIT_OUTPUT_FILE="<< outputs.junit >>" npm test -- << test.atoms >> --ci --maxWorkers=2 --passWithNoTests --reporters=default --reporters=jest-junit
@@ -26,8 +22,10 @@ outputs:
 options:
   adaptive-testing: true
   dynamic-batching: true
+  full-test-run-paths:
+    - package-lock.json
+    - jest.config.js
 ---
-# E2E Tests - End-to-end API tests
 name: e2e-tests
 discover: find tests/e2e -name "*.test.ts" -type f | sed 's|^|/home/circleci/project/|'
 run: JEST_JUNIT_OUTPUT_FILE="<< outputs.junit >>" npm test -- << test.atoms >> --ci --runInBand --passWithNoTests --reporters=default --reporters=jest-junit
@@ -38,3 +36,6 @@ outputs:
 options:
   adaptive-testing: true
   dynamic-batching: true
+  full-test-run-paths:
+    - package-lock.json
+    - jest.config.js

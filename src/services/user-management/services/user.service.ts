@@ -78,8 +78,9 @@ export class UserService {
       emailVerificationToken,
     });
 
-    // Send verification email if notification service is available
+    // Send emails if notification service is available
     if (this.notificationService) {
+      await this.notificationService.sendWelcomeEmail(user.email, user.firstName, user.id);
       await this.notificationService.sendVerificationEmail(user.email, emailVerificationToken);
     }
 
@@ -108,12 +109,17 @@ export class UserService {
 
     // Check if account is locked
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new UnauthorizedError('Account is temporarily locked');
+      throw new UnauthorizedError('Account is locked');
     }
 
     // Check if account is suspended
     if (user.status === UserStatus.SUSPENDED) {
-      throw new UnauthorizedError('Account has been suspended');
+      throw new UnauthorizedError('Account is suspended');
+    }
+
+    // Check if account is deleted
+    if (user.status === UserStatus.DELETED || user.deletedAt) {
+      throw new UnauthorizedError('Account has been deleted');
     }
 
     // Verify password
@@ -181,7 +187,7 @@ export class UserService {
 
     // Generate new verification token
     const emailVerificationToken = this.generateToken();
-    await this.userRepository.update(user.id, { emailVerificationToken });
+    await this.userRepository.setEmailVerificationToken(user.id, emailVerificationToken);
 
     // Send verification email if notification service is available
     if (this.notificationService) {
@@ -243,6 +249,11 @@ export class UserService {
 
     const resetToken = this.generateToken();
     await this.userRepository.setPasswordResetToken(user.id, resetToken);
+
+    // Send password reset email if notification service is available
+    if (this.notificationService) {
+      await this.notificationService.sendPasswordResetEmail(user.email, resetToken);
+    }
 
     return user;
   }

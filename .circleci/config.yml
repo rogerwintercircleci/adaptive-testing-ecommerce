@@ -375,12 +375,17 @@ workflows:
             - build
 
   # Workflow WITH adaptive testing (optimized)
+  # NOTE: Disabled in favor of test_adaptive_intelligent workflow
+  # This workflow uses test splitting by timing (not true adaptive testing)
   test_adaptive:
     jobs:
       - checkout_and_install:
           filters:
             branches:
-              ignore: main
+              ignore:
+                - main
+                - master
+                - adaptive-testing-demo
       - lint_and_typecheck:
           requires:
             - checkout_and_install

@@ -71,19 +71,21 @@ https://github.com/rogerwintercircleci/adaptive-testing-ecommerce/blob/adaptive-
 `.circleci/test-suites.yml` - Defines how adaptive testing discovers and runs tests:
 
 ```yaml
-test-suites:
-  unit-tests:
-    discover:
-      command: find src -name "*.spec.ts" -type f
-    run:
-      command: npm test -- << test.atoms >> --ci
-    analysis:
-      command: npm test -- << test.atoms >> --coverage --runInBand
+name: unit-tests
+discover: find src -name "*.spec.ts" -type f | sed 's|^|/home/circleci/project/|'
+run: npm test -- << test.atoms >> --ci --maxWorkers=2 --passWithNoTests
+analysis: npm test -- << test.atoms >> --ci --coverage --runInBand --passWithNoTests
+outputs:
+  junit: test-results/jest/results.xml
+  lcov: coverage/lcov.info
+options:
+  adaptive-testing: true
+  dynamic-batching: true
 ```
 
 ### 2. Updated CircleCI Config
 
-Added new jobs that use `circleci tests run --suite <suite-name>`
+Added new jobs that use `circleci run testsuite "<suite-name>"`
 
 ### 3. Sample Code Change
 

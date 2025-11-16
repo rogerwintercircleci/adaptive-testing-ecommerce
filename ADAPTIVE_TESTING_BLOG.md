@@ -66,32 +66,40 @@ Create `.circleci/test-suites.yml`:
 
 ```yaml
 # CircleCI Adaptive Testing Configuration
-test-suites:
-  # Unit Tests - Service layer tests
-  unit-tests:
-    discover:
-      # Find all unit test files
-      command: find src -name "*.spec.ts" -type f | sed 's|^|/home/circleci/project/|'
-
-    run:
-      # Run only selected tests (test.atoms contains impacted tests)
-      command: npm test -- << test.atoms >> --ci --maxWorkers=2 --passWithNoTests
-
-    analysis:
-      # Run individually with coverage for impact mapping
-      command: npm test -- << test.atoms >> --ci --coverage --runInBand --passWithNoTests
-
-    outputs:
-      test-results: test-results/jest
-      coverage: coverage
+# Unit Tests - Service layer tests
+name: unit-tests
+discover: find src -name "*.spec.ts" -type f | sed 's|^|/home/circleci/project/|'
+run: npm test -- << test.atoms >> --ci --maxWorkers=2 --passWithNoTests
+analysis: npm test -- << test.atoms >> --ci --coverage --runInBand --passWithNoTests
+outputs:
+  junit: test-results/jest/results.xml
+  lcov: coverage/lcov.info
+options:
+  adaptive-testing: true
+  dynamic-batching: true
+---
+# Integration Tests - Use '---' to separate multiple test suites
+name: integration-tests
+discover: find tests/integration -name "*.test.ts" -type f | sed 's|^|/home/circleci/project/|'
+run: npm test -- << test.atoms >> --ci --maxWorkers=2 --passWithNoTests
+analysis: npm test -- << test.atoms >> --ci --coverage --runInBand --passWithNoTests
+outputs:
+  junit: test-results/jest/results.xml
+  lcov: coverage/lcov.info
+options:
+  adaptive-testing: true
+  dynamic-batching: true
 ```
 
 **Key Components:**
 
-- **`discover`**: Finds all test files without running them
-- **`run`**: Executes selected tests using `<< test.atoms >>` variable
-- **`analysis`**: Runs tests with coverage to build impact mapping
-- **`outputs`**: Specifies where results/coverage are stored
+- **`name`**: Unique identifier for the test suite
+- **`discover`**: Command to find all test files without running them
+- **`run`**: Command to execute selected tests using `<< test.atoms >>` variable
+- **`analysis`**: Command to run tests with coverage for building impact mapping
+- **`outputs`**: Specifies where test results and coverage are stored (junit, lcov)
+- **`options`**: Configuration flags (adaptive-testing, dynamic-batching)
+- **`---`**: YAML separator for defining multiple test suites in one file
 
 ### Step 2: Update CircleCI Config
 

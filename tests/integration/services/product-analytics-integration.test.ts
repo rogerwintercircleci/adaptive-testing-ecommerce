@@ -103,17 +103,11 @@ describe('Product and Analytics Integration Tests', () => {
     it('should track product purchases and update sold count', async () => {
       const productId = 'prod-purchase-1';
 
-      mockProductRepository.findById
-        .mockResolvedValueOnce({
-          id: productId,
-          name: 'Purchase Product',
-          soldCount: 50,
-        } as any)
-        .mockResolvedValueOnce({
-          id: productId,
-          name: 'Purchase Product',
-          soldCount: 53,
-        } as any);
+      mockProductRepository.findById.mockResolvedValue({
+        id: productId,
+        name: 'Purchase Product',
+        soldCount: 53,
+      } as any);
 
       mockProductRepository.incrementSoldCount.mockResolvedValue({
         id: productId,
@@ -238,17 +232,11 @@ describe('Product and Analytics Integration Tests', () => {
     it('should track rating changes', async () => {
       const productId = 'prod-rating-1';
 
-      mockProductRepository.findById
-        .mockResolvedValueOnce({
-          id: productId,
-          rating: 4.0,
-          reviewCount: 10,
-        } as any)
-        .mockResolvedValueOnce({
-          id: productId,
-          rating: 4.2,
-          reviewCount: 11,
-        } as any);
+      mockProductRepository.findById.mockResolvedValue({
+        id: productId,
+        rating: 4.2,
+        reviewCount: 11,
+      } as any);
 
       // Add new rating
       mockProductRepository.updateRating.mockResolvedValue({

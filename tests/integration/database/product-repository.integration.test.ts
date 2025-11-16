@@ -34,7 +34,7 @@ describe('ProductRepository Integration Tests', () => {
       const productData = {
         name: 'Test Product',
         description: 'Test Description',
-        sku: 'TEST-SKU-001',
+        productSku: 'TEST-SKU-001',
         price: 99.99,
         inventory: 10,
       };
@@ -52,7 +52,7 @@ describe('ProductRepository Integration Tests', () => {
       const productData = {
         name: 'Product',
         description: 'Description',
-        sku: 'DUPLICATE-SKU',
+        productSku: 'DUPLICATE-SKU',
         price: 50.00,
         inventory: 5,
       };
@@ -68,7 +68,7 @@ describe('ProductRepository Integration Tests', () => {
       const product = await productRepository.createProduct({
         name: 'Inventory Test',
         description: 'Test',
-        sku: 'INV-001',
+        productSku: 'INV-001',
         price: 25.00,
         inventory: 100,
       });
@@ -84,7 +84,7 @@ describe('ProductRepository Integration Tests', () => {
       const product = await productRepository.createProduct({
         name: 'Decrement Test',
         description: 'Test',
-        sku: 'DEC-001',
+        productSku: 'DEC-001',
         price: 30.00,
         inventory: 100,
       });
@@ -98,7 +98,7 @@ describe('ProductRepository Integration Tests', () => {
       const product = await productRepository.createProduct({
         name: 'Increment Test',
         description: 'Test',
-        sku: 'INC-001',
+        productSku: 'INC-001',
         price: 40.00,
         inventory: 50,
       });
@@ -112,7 +112,7 @@ describe('ProductRepository Integration Tests', () => {
       await productRepository.createProduct({
         name: 'Low Stock 1',
         description: 'Test',
-        sku: 'LOW-001',
+        productSku: 'LOW-001',
         price: 20.00,
         inventory: 3,
         status: ProductStatus.ACTIVE,
@@ -121,7 +121,7 @@ describe('ProductRepository Integration Tests', () => {
       await productRepository.createProduct({
         name: 'Low Stock 2',
         description: 'Test',
-        sku: 'LOW-002',
+        productSku: 'LOW-002',
         price: 20.00,
         inventory: 5,
         status: ProductStatus.ACTIVE,
@@ -139,7 +139,7 @@ describe('ProductRepository Integration Tests', () => {
       await productRepository.createProduct({
         name: 'Laptop Computer',
         description: 'High performance laptop',
-        sku: 'LAPTOP-001',
+        productSku: 'LAPTOP-001',
         price: 999.99,
         inventory: 10,
         status: ProductStatus.ACTIVE,
@@ -148,7 +148,7 @@ describe('ProductRepository Integration Tests', () => {
       await productRepository.createProduct({
         name: 'Mouse',
         description: 'Wireless mouse',
-        sku: 'MOUSE-001',
+        productSku: 'MOUSE-001',
         price: 29.99,
         inventory: 50,
         status: ProductStatus.ACTIVE,
@@ -188,7 +188,7 @@ describe('ProductRepository Integration Tests', () => {
       await productRepository.createProduct({
         name: 'Active Product',
         description: 'Test',
-        sku: 'ACTIVE-001',
+        productSku: 'ACTIVE-001',
         price: 50.00,
         inventory: 10,
         status: ProductStatus.ACTIVE,
@@ -204,7 +204,7 @@ describe('ProductRepository Integration Tests', () => {
       const product = await productRepository.createProduct({
         name: 'Sales Test',
         description: 'Test',
-        sku: 'SALES-001',
+        productSku: 'SALES-001',
         price: 60.00,
         inventory: 100,
       });
@@ -227,7 +227,7 @@ describe('ProductRepository Integration Tests', () => {
       const product = await productRepository.createProduct({
         name: 'Rating Test',
         description: 'Test',
-        sku: 'RATING-001',
+        productSku: 'RATING-001',
         price: 45.00,
         inventory: 20,
       });
@@ -250,7 +250,7 @@ describe('ProductRepository Integration Tests', () => {
       await productRepository.createProduct({
         name: 'Sale Product',
         description: 'On sale',
-        sku: 'SALE-001',
+        productSku: 'SALE-001',
         price: 79.99,
         compareAtPrice: 99.99,
         inventory: 15,

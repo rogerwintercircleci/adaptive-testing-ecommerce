@@ -39,7 +39,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-1',
             productName: 'Test Product',
-            sku: 'TEST-001',
+            productSku: 'TEST-001',
             quantity: 2,
             unitPrice: 50.00,
             subtotal: 100.00,
@@ -67,7 +67,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-2',
             productName: 'Product 2',
-            sku: 'TEST-002',
+            productSku: 'TEST-002',
             quantity: 1,
             unitPrice: 75.00,
             subtotal: 75.00,
@@ -96,7 +96,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-3',
             productName: 'Product 3',
-            sku: 'TEST-003',
+            productSku: 'TEST-003',
             quantity: 1,
             unitPrice: 30.00,
             subtotal: 30.00,
@@ -124,7 +124,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-4',
             productName: 'Product 4',
-            sku: 'TEST-004',
+            productSku: 'TEST-004',
             quantity: 2,
             unitPrice: 25.00,
             subtotal: 50.00,
@@ -153,7 +153,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-5',
             productName: 'Product 5',
-            sku: 'TEST-005',
+            productSku: 'TEST-005',
             quantity: 1,
             unitPrice: 100.00,
             subtotal: 100.00,
@@ -179,7 +179,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-6',
             productName: 'Product 6',
-            sku: 'TEST-006',
+            productSku: 'TEST-006',
             quantity: 1,
             unitPrice: 50.00,
             subtotal: 50.00,
@@ -210,7 +210,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-7',
             productName: 'Product 7',
-            sku: 'TEST-007',
+            productSku: 'TEST-007',
             quantity: 1,
             unitPrice: 75.00,
             subtotal: 75.00,
@@ -239,7 +239,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-8',
             productName: 'Product 8',
-            sku: 'TEST-008',
+            productSku: 'TEST-008',
             quantity: 1,
             unitPrice: 200.00,
             subtotal: 200.00,
@@ -255,12 +255,10 @@ describe('OrderRepository Integration Tests', () => {
 
       const updated = await orderRepository.updatePaymentStatus(
         order.id,
-        'paid',
-        'txn-123456'
+        PaymentStatus.PAID
       );
 
-      expect(updated.paymentStatus).toBe('paid');
-      expect(updated.paymentTransactionId).toBe('txn-123456');
+      expect(updated.paymentStatus).toBe(PaymentStatus.PAID);
       expect(updated.paidAt).toBeDefined();
     });
 
@@ -271,7 +269,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-9',
             productName: 'Product 9',
-            sku: 'TEST-009',
+            productSku: 'TEST-009',
             quantity: 1,
             unitPrice: 150.00,
             subtotal: 150.00,
@@ -283,14 +281,14 @@ describe('OrderRepository Integration Tests', () => {
         discountAmount: 0,
         total: 170.00,
         status: OrderStatus.CONFIRMED,
-        paymentStatus: 'paid',
+        paymentStatus: PaymentStatus.PAID,
         paidAt: new Date(),
       });
 
       const paidOrders = await orderRepository.findPaidOrders();
 
       expect(paidOrders.length).toBeGreaterThanOrEqual(1);
-      expect(paidOrders.every(o => o.paymentStatus === 'paid')).toBe(true);
+      expect(paidOrders.every(o => o.paymentStatus === PaymentStatus.PAID)).toBe(true);
     });
   });
 
@@ -305,7 +303,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-10',
             productName: 'Product 10',
-            sku: 'TEST-010',
+            productSku: 'TEST-010',
             quantity: 1,
             unitPrice: 100.00,
             subtotal: 100.00,
@@ -341,7 +339,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-11',
             productName: 'Product 11',
-            sku: 'TEST-011',
+            productSku: 'TEST-011',
             quantity: 1,
             unitPrice: 80.00,
             subtotal: 80.00,
@@ -374,7 +372,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-12',
             productName: 'Product 12',
-            sku: 'TEST-012',
+            productSku: 'TEST-012',
             quantity: 1,
             unitPrice: 60.00,
             subtotal: 60.00,
@@ -421,7 +419,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-13',
             productName: 'Product 13',
-            sku: 'TEST-013',
+            productSku: 'TEST-013',
             quantity: 1,
             unitPrice: 40.00,
             subtotal: 40.00,
@@ -449,7 +447,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-14',
             productName: 'Product 14',
-            sku: 'TEST-014',
+            productSku: 'TEST-014',
             quantity: 1,
             unitPrice: 90.00,
             subtotal: 90.00,
@@ -477,7 +475,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-15',
             productName: 'Product 15',
-            sku: 'TEST-015',
+            productSku: 'TEST-015',
             quantity: 2,
             unitPrice: 50.00,
             subtotal: 100.00,
@@ -509,7 +507,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-16',
             productName: 'Product 16',
-            sku: 'TEST-016',
+            productSku: 'TEST-016',
             quantity: 1,
             unitPrice: 70.00,
             subtotal: 70.00,
@@ -546,7 +544,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-17',
             productName: 'Expensive Product',
-            sku: 'TEST-017',
+            productSku: 'TEST-017',
             quantity: 5,
             unitPrice: 500.00,
             subtotal: 2500.00,
@@ -581,7 +579,7 @@ describe('OrderRepository Integration Tests', () => {
           {
             productId: 'prod-18',
             productName: 'Product 18',
-            sku: 'TEST-018',
+            productSku: 'TEST-018',
             quantity: 1,
             unitPrice: 30.00,
             subtotal: 30.00,

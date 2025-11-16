@@ -270,21 +270,257 @@ function mockHandler(req: Request, res: Response, _next: NextFunction) {
 
   if (path === '/api/cart' && method === 'GET') {
     if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    // Return cart with items for testing
+    const cart = (req as any).__testCart || { items: [], subtotal: 0, total: 0 };
+    return res.json(cart);
+  }
+
+  if (path === '/api/cart/items' && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const { productId, quantity } = req.body;
+
+    // Basic validation
+    if (!productId) return res.status(404).json({ error: 'Product not found' });
+    if (quantity <= 0) return res.status(400).json({ error: 'Quantity must be positive' });
+    if (productId === 'out-of-stock') return res.status(400).json({ error: 'Product is out of stock' });
+
     return res.json({
-      items: [],
-      subtotal: 0,
-      total: 0,
+      items: [{ productId, quantity, price: 50.00, total: quantity * 50 }],
+      subtotal: quantity * 50,
+      total: quantity * 50,
     });
+  }
+
+  if (path.startsWith('/api/cart/items/') && method === 'PUT') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const { quantity } = req.body;
+    const productId = path.split('/')[4];
+
+    if (quantity === 0) {
+      return res.json({ items: [], subtotal: 0, total: 0 });
+    }
+
+    return res.json({
+      items: [{ productId, quantity, price: 50.00, total: quantity * 50 }],
+      subtotal: quantity * 50,
+      total: quantity * 50,
+    });
+  }
+
+  if (path.startsWith('/api/cart/items/') && method === 'DELETE') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    return res.json({ items: [], subtotal: 0, total: 0 });
+  }
+
+  if (path === '/api/cart' && method === 'DELETE') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    return res.json({ items: [], total: 0 });
   }
 
   if (path === '/api/orders' && method === 'POST') {
     if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const { shippingAddress } = req.body;
+
+    // Validate shipping address
+    if (!shippingAddress || !shippingAddress.street) {
+      return res.status(400).json({ error: 'Shipping address is required' });
+    }
+
     return res.status(201).json({
       id: 'order-' + Date.now(),
       orderNumber: 'ORD-' + Date.now(),
       status: 'pending',
-      items: [],
-      total: 0,
+      items: req.body.items || [],
+      total: req.body.total || 0,
+      shippingAddress,
+    });
+  }
+
+  if (path === '/api/orders' && method === 'GET') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const { status, startDate: _startDate, endDate: _endDate, page, limit } = req.query;
+
+    const orders = [
+      { id: 'ord-1', orderNumber: 'ORD-001', status: status || 'delivered', total: 100 },
+      { id: 'ord-2', orderNumber: 'ORD-002', status: status || 'delivered', total: 200 },
+    ];
+
+    return res.json({
+      orders: orders,
+      total: orders.length,
+      page: parseInt(page as string) || 1,
+      limit: parseInt(limit as string) || 10,
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && method === 'GET' && !path.includes('/history') && !path.includes('/tracking') && !path.includes('/notes')) {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const orderId = path.split('/')[3];
+
+    if (orderId === 'nonexistent') {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Check if trying to access another user's order
+    if (orderId === 'order-123' && !authHeader?.includes('user-123') && !isAdmin) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    return res.json({
+      id: orderId,
+      orderNumber: 'ORD-' + orderId,
+      status: 'pending',
+      items: [{ productId: 'prod-1', quantity: 2, price: 50 }],
+      total: 100,
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/cancel') && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const orderId = path.split('/')[3];
+    const { reason } = req.body;
+
+    if (orderId === 'shipped-order') {
+      return res.status(400).json({ error: 'Order cannot be cancelled - already shipped' });
+    }
+
+    return res.json({
+      id: orderId,
+      status: 'cancelled',
+      cancellationReason: reason,
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/payment') && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const orderId = path.split('/')[3];
+    const { cardNumber } = req.body;
+
+    if (cardNumber === '4111111111111112') {
+      return res.status(400).json({ error: 'Payment declined' });
+    }
+
+    return res.json({
+      id: orderId,
+      paymentStatus: 'paid',
+      paymentTransactionId: 'txn-' + Date.now(),
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/shipping') && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    if (!isAdmin) return res.status(403).json({ error: 'Forbidden - admin access required' });
+
+    const orderId = path.split('/')[3];
+    const { shippingCarrier, trackingNumber } = req.body;
+
+    return res.json({
+      id: orderId,
+      shippingCarrier,
+      trackingNumber,
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/ship') && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    if (!isAdmin) return res.status(403).json({ error: 'Forbidden - admin access required' });
+
+    const orderId = path.split('/')[3];
+    return res.json({
+      id: orderId,
+      status: 'shipped',
+      shippedAt: new Date(),
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/delivered') && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const orderId = path.split('/')[3];
+    return res.json({
+      id: orderId,
+      status: 'delivered',
+      deliveredAt: new Date(),
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/history') && method === 'GET') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    return res.json([
+      { status: 'pending', timestamp: new Date(), note: 'Order created' },
+      { status: 'confirmed', timestamp: new Date(), note: 'Order confirmed' },
+    ]);
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/tracking') && method === 'GET') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    return res.json({
+      trackingNumber: '1Z999AA10123456784',
+      carrier: 'UPS',
+      status: 'in_transit',
+      events: [],
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/notes') && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const { note } = req.body;
+    return res.json({
+      id: 'note-' + Date.now(),
+      note,
+      createdAt: new Date(),
+    });
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/notes') && method === 'GET') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    return res.json([
+      { id: 'note-1', note: 'Test note', createdAt: new Date() },
+    ]);
+  }
+
+  if (path.startsWith('/api/orders/') && path.endsWith('/refund') && method === 'POST') {
+    if (!hasAuth) return res.status(401).json({ error: 'Unauthorized' });
+    const orderId = path.split('/')[3];
+    const { amount, reason } = req.body;
+    return res.json({
+      id: orderId,
+      refundAmount: amount,
+      refundReason: reason,
+      refundStatus: 'completed',
+    });
+  }
+
+  if (path === '/api/orders/stats' && method === 'GET') {
+    if (!isAdmin) return res.status(403).json({ error: 'Forbidden - admin access required' });
+    return res.json({
+      totalOrders: 100,
+      pending: 20,
+      confirmed: 30,
+      shipped: 25,
+      delivered: 20,
+      cancelled: 5,
+    });
+  }
+
+  if (path === '/api/orders/recent' && method === 'GET') {
+    if (!isAdmin) return res.status(403).json({ error: 'Forbidden - admin access required' });
+    return res.json([
+      { id: 'ord-1', orderNumber: 'ORD-001', status: 'pending', total: 100 },
+      { id: 'ord-2', orderNumber: 'ORD-002', status: 'delivered', total: 200 },
+    ]);
+  }
+
+  if (path === '/api/orders/export' && method === 'GET') {
+    if (!isAdmin) return res.status(403).json({ error: 'Forbidden - admin access required' });
+    res.setHeader('Content-Type', 'text/csv');
+    return res.send('id,orderNumber,status,total\nord-1,ORD-001,pending,100');
+  }
+
+  if (path === '/api/orders/bulk-update' && method === 'POST') {
+    if (!isAdmin) return res.status(403).json({ error: 'Forbidden - admin access required' });
+    const { orderIds } = req.body;
+    return res.json({
+      updated: orderIds?.length || 0,
     });
   }
 

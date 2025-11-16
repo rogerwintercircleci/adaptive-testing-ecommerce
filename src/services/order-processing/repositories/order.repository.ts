@@ -213,4 +213,61 @@ export class OrderRepository extends BaseRepository<Order> {
 
     return !!order;
   }
+
+  /**
+   * Apply discount to order
+   */
+  async applyDiscount(orderId: string, discountCode: string, discountAmount: number): Promise<Order> {
+    const order = await this.findById(orderId);
+    const newTotal = order.subtotal + order.taxAmount + order.shippingCost - discountAmount;
+
+    const updated = this.repository.merge(order, {
+      discountCode,
+      discountAmount,
+      total: newTotal,
+    });
+
+    return this.repository.save(updated);
+  }
+
+  /**
+   * Find orders with discounts
+   */
+  async findOrdersWithDiscounts(): Promise<Order[]> {
+    return this.repository
+      .createQueryBuilder('order')
+      .where('order.discountAmount > :amount', { amount: 0 })
+      .orderBy('order.createdAt', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Find recent orders
+   */
+  async findRecentOrders(limit: number = 10): Promise<Order[]> {
+    return this.repository.find({
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+  }
+
+  /**
+   * Find large orders above threshold
+   */
+  async findLargeOrders(minAmount: number): Promise<Order[]> {
+    return this.repository
+      .createQueryBuilder('order')
+      .where('order.total >= :minAmount', { minAmount })
+      .orderBy('order.total', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Find paid orders
+   */
+  async findPaidOrders(): Promise<Order[]> {
+    return this.repository.find({
+      where: { paymentStatus: PaymentStatus.PAID },
+    });
+  }
 }

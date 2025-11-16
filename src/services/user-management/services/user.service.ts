@@ -108,12 +108,12 @@ export class UserService {
 
     // Check if account is locked
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new UnauthorizedError('Account is locked. Please try again later.');
+      throw new UnauthorizedError('Account is temporarily locked');
     }
 
     // Check if account is suspended
     if (user.status === UserStatus.SUSPENDED) {
-      throw new UnauthorizedError('Account is suspended');
+      throw new UnauthorizedError('Account has been suspended');
     }
 
     // Verify password

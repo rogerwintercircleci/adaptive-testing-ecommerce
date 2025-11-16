@@ -232,7 +232,7 @@ describe('UserRepository', () => {
     it('should update last login timestamp', async () => {
       const userId = '123';
       const mockUser = { id: userId, lastLoginAt: null } as unknown as User;
-      const updatedUser = { ...mockUser, lastLoginAt: expect.any(Date) };
+      const updatedUser = { ...mockUser, lastLoginAt: new Date() };
 
       (mockRepository.findOne as jest.Mock).mockResolvedValue(mockUser);
       (mockRepository.merge as jest.Mock).mockReturnValue(updatedUser);

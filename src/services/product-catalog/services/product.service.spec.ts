@@ -292,7 +292,7 @@ describe('ProductService', () => {
 
       mockProductRepository.decrementInventory.mockResolvedValue(mockProduct);
 
-      const result = await productService.reserveInventory('123', 5);
+      await productService.reserveInventory('123', 5);
 
       expect(mockProductRepository.decrementInventory).toHaveBeenCalledWith('123', 5);
     });
@@ -329,7 +329,7 @@ describe('ProductService', () => {
 
       mockProductRepository.incrementInventory.mockResolvedValue(mockProduct);
 
-      const result = await productService.restockInventory('123', 10);
+      await productService.restockInventory('123', 10);
 
       expect(mockProductRepository.incrementInventory).toHaveBeenCalledWith('123', 10);
     });
@@ -453,17 +453,24 @@ describe('ProductService', () => {
 
   describe('updateProductRating', () => {
     it('should update product rating', async () => {
-      const mockProduct = {
+      const currentProduct = {
+        id: '123',
+        rating: 4.0,
+        reviewCount: 10,
+      } as Product;
+
+      const updatedProduct = {
         id: '123',
         rating: 4.5,
         reviewCount: 11,
       } as Product;
 
-      mockProductRepository.updateRating.mockResolvedValue(mockProduct);
+      mockProductRepository.findById.mockResolvedValue(currentProduct);
+      mockProductRepository.updateRating.mockResolvedValue(updatedProduct);
 
       const result = await productService.updateProductRating('123', 5, 1);
 
-      expect(result).toEqual(mockProduct);
+      expect(result).toEqual(updatedProduct);
     });
 
     it('should reject invalid rating', async () => {

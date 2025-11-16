@@ -40,8 +40,12 @@ describe('JWT Utilities', () => {
       expect(decoded?.role).toBe(mockPayload.role);
     });
 
-    it('should generate different tokens for same payload', () => {
+    it('should generate different tokens for same payload', async () => {
       const token1 = generateAccessToken(mockPayload);
+
+      // Wait 1 second to ensure different iat timestamp
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const token2 = generateAccessToken(mockPayload);
 
       // Tokens will differ due to iat (issued at) timestamp

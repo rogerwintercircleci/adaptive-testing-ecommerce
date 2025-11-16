@@ -376,10 +376,7 @@ export class UserService {
   }
 
   /**
-   * Get user's initials
-   * Helper method for avatar displays
-   * DEMO: Testing adaptive testing - should only run ~50 user-related tests
-   * Updated: Verifying that adaptive testing selects only impacted tests
+   * Get user's initials for avatar display
    */
   getUserInitials(user: User): string {
     const firstInitial = user.firstName?.charAt(0)?.toUpperCase() || '';
